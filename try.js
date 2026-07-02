@@ -44,3 +44,19 @@ for(let i=5; i>=1;i--){
       }
       console.log(row);
 }
+
+
+const positive = (num) => {
+    if(num < 0){
+        console.log("Negative")
+    }
+    else if(num === 0 ){
+        console.log("Zero")
+    }
+    else{
+        console.log("Positive")
+    }
+}
+
+positive(10);
+positive(-5);

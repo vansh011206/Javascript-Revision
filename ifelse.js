@@ -112,3 +112,4 @@ else {
 // 16
 // let num = -8;
 // console.log(num > 0 ? "Positive" : "Negative");
+
