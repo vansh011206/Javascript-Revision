@@ -44,8 +44,6 @@ true
 // 13
 // Result: Pass
 
-
-
 let student = {
   name: "Vanshaj",
   age: 20,
@@ -53,7 +51,6 @@ let student = {
 };
 
 console.log(`${student.name} is ${student.age} years old and lives in ${student.city}.`)
-
 
 // 15
 // ye tum batao 
