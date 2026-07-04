@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/*
+  JS Practice Vault — dark, premium theme.
+  Palette: charcoal/black base with orange · purple · teal neon accents.
+*/
+@theme {
+  --color-vault-bg: #0a0a0f;
+  --color-vault-surface: #12121a;
+  --color-vault-elevated: #1a1a24;
+  --color-vault-border: #26263a;
+  --color-vault-line: #2a2a38;
+  --color-vault-text: #e8e8f0;
+  --color-vault-muted: #8a8aa0;
+  --color-vault-faint: #5a5a70;
+
+  --color-accent-orange: #ff8a3d;
+  --color-accent-purple: #a855f7;
+  --color-accent-teal: #2dd4bf;
+
+  --font-sans: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-vault-bg);
+  color: var(--color-vault-text);
+  font-family: var(--font-sans);
+  /* Soft radial glows behind the app for that premium SaaS depth. */
+  background-image:
+    radial-gradient(60rem 40rem at 15% -10%, rgba(168, 85, 247, 0.12), transparent 60%),
+    radial-gradient(50rem 35rem at 95% 10%, rgba(45, 212, 191, 0.1), transparent 55%),
+    radial-gradient(45rem 30rem at 50% 110%, rgba(255, 138, 61, 0.1), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Glassmorphism panel used by cards, sidebar, editor chrome. */
+@utility glass {
+  background: color-mix(in oklab, var(--color-vault-surface) 70%, transparent);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Thin, tasteful scrollbars to match the dark theme. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-vault-line) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-vault-line);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-vault-faint);
+  background-clip: content-box;
+}
+
+/* Gentle shimmer for loading states. */
+@keyframes vault-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+.vault-pulse {
+  animation: vault-pulse 1.6s ease-in-out infinite;
+}
