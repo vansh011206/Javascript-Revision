@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Topic } from "@/lib/topics";
 import { CodeEditor } from "./CodeEditor";
+import { RunButton } from "./RunButton";
+import { RunConsolePanel, useJsRunner } from "./RunConsole";
 import { accentClasses, accentFor, difficultyChip } from "@/lib/ui";
 
 type Status = "saved" | "dirty" | "saving" | "error";
@@ -23,6 +25,8 @@ export function TopicEditorClient({
   const [savedCode, setSavedCode] = useState(initialContent);
   const [status, setStatus] = useState<Status>("saved");
   const [message, setMessage] = useState<string | null>(null);
+
+  const runner = useJsRunner();
 
   const dirty = code !== savedCode;
 
@@ -141,6 +145,10 @@ export function TopicEditorClient({
             <span className={`hidden text-xs sm:block ${statusColor[status]}`}>
               {statusLabel[status]}
             </span>
+            <RunButton
+              onClick={() => runner.run(code)}
+              running={runner.running}
+            />
             <button
               onClick={handleDelete}
               className="rounded-lg p-2 text-vault-faint transition-colors hover:bg-red-500/10 hover:text-red-400"
@@ -177,12 +185,27 @@ export function TopicEditorClient({
         </div>
       </header>
 
-      {/* Editor */}
-      <div className="relative min-h-0 flex-1">
-        <div
-          className={`absolute inset-x-0 top-0 h-0.5 ${accent.dot} opacity-60`}
+      {/* Editor + output console */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="relative min-h-0 flex-1">
+          <div
+            className={`absolute inset-x-0 top-0 z-10 h-0.5 ${accent.dot} opacity-60`}
+          />
+          <CodeEditor
+            value={code}
+            onChange={setCode}
+            onSave={save}
+            onRun={() => runner.run(code)}
+          />
+        </div>
+        <RunConsolePanel
+          open={runner.open}
+          logs={runner.logs}
+          running={runner.running}
+          meta={runner.meta}
+          onClose={runner.close}
+          onClear={runner.clear}
         />
-        <CodeEditor value={code} onChange={setCode} onSave={save} />
       </div>
     </div>
   );

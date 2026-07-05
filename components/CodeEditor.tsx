@@ -8,6 +8,8 @@ type CodeEditorProps = {
   onChange: (value: string) => void;
   /** Ctrl/Cmd+S handler so users can save from the keyboard. */
   onSave?: () => void;
+  /** Ctrl/Cmd+Enter handler to run the code. */
+  onRun?: () => void;
   readOnly?: boolean;
   height?: string;
 };
@@ -22,11 +24,14 @@ export function CodeEditor({
   value,
   onChange,
   onSave,
+  onRun,
   readOnly = false,
   height = "100%",
 }: CodeEditorProps) {
   const saveRef = useRef(onSave);
   saveRef.current = onSave;
+  const runRef = useRef(onRun);
+  runRef.current = onRun;
 
   const handleMount: OnMount = (editor, monaco) => {
     // Define a dark theme that blends with the vault palette.
@@ -76,6 +81,11 @@ export function CodeEditor({
     // Ctrl/Cmd+S → save (prevents the browser's own save dialog).
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       saveRef.current?.();
+    });
+
+    // Ctrl/Cmd+Enter → run the code.
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      runRef.current?.();
     });
   };
 

@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { CodeEditor } from "./CodeEditor";
+import { RunButton } from "./RunButton";
+import { RunConsolePanel, useJsRunner } from "./RunConsole";
 
 const starterFor = (name: string) => `// ${name || "New snippet"}
 // Write some JavaScript, then "Save to Vault".
@@ -36,6 +38,8 @@ export function NotebookClient() {
   const [code, setCode] = useState(starterFor(""));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const runner = useJsRunner();
 
   // Step 1 — lock in the name, then reveal the editor.
   const confirmName = () => {
@@ -121,53 +125,74 @@ export function NotebookClient() {
               {nameSet ? `${previewFile(name)}.js · not yet saved` : "name your snippet to begin"}
             </p>
           </div>
-          <button
-            onClick={save}
-            disabled={!nameSet || saving}
-            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
-              nameSet && !saving
-                ? "bg-gradient-to-r from-accent-teal to-accent-purple text-black hover:scale-[1.03] active:scale-95"
-                : "cursor-not-allowed bg-white/5 text-vault-faint"
-            }`}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4"
+          <div className="flex items-center gap-2">
+            <RunButton
+              onClick={() => runner.run(code)}
+              running={runner.running}
+              disabled={!nameSet}
+            />
+            <button
+              onClick={save}
+              disabled={!nameSet || saving}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+                nameSet && !saving
+                  ? "bg-gradient-to-r from-accent-teal to-accent-purple text-black hover:scale-[1.03] active:scale-95"
+                  : "cursor-not-allowed bg-white/5 text-vault-faint"
+              }`}
             >
-              <path d="M5 3h11l3 3v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
-              <path d="M17 21v-8H7v8M7 3v5h8" />
-            </svg>
-            {saving ? "Saving…" : "Save to Vault"}
-          </button>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M5 3h11l3 3v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
+                <path d="M17 21v-8H7v8M7 3v5h8" />
+              </svg>
+              {saving ? "Saving…" : "Save to Vault"}
+            </button>
+          </div>
         </div>
         {error && nameSet && (
           <p className="mt-2 text-xs text-red-400">{error}</p>
         )}
       </header>
 
-      {/* Editor */}
-      <div className="min-h-0 flex-1">
-        <CodeEditor value={code} onChange={setCode} onSave={save} />
+      {/* Editor + output console */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1">
+          <CodeEditor
+            value={code}
+            onChange={setCode}
+            onSave={save}
+            onRun={() => nameSet && runner.run(code)}
+          />
+        </div>
+        <RunConsolePanel
+          open={runner.open}
+          logs={runner.logs}
+          running={runner.running}
+          meta={runner.meta}
+          onClose={runner.close}
+          onClear={runner.clear}
+        />
       </div>
 
-      {/* Naming modal — shown first, before any code is written */}
-      <AnimatePresence>
-        {!nameSet && (
+      {/* Naming modal — shown first, before any code is written.
+          Rendered conditionally (no exit animation) so it unmounts instantly
+          on "Start coding" and never leaves an invisible click-blocker. */}
+      {!nameSet && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.94, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 8 }}
               transition={{ type: "spring", stiffness: 320, damping: 26 }}
               className="glass w-full max-w-md rounded-2xl border border-vault-border p-6"
             >
@@ -217,7 +242,6 @@ export function NotebookClient() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
     </div>
   );
 }
