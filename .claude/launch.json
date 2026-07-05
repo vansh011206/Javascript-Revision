@@ -4,7 +4,7 @@
     {
       "name": "vault-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "js-practice-vault", "run", "dev"],
+      "runtimeArgs": ["run", "dev"],
       "port": 3000
     }
   ]

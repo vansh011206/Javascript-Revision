@@ -8,19 +8,30 @@ import { TopicCard } from "./TopicCard";
 
 export function DashboardClient({ initialTopics }: { initialTopics: Topic[] }) {
   const [query, setQuery] = useState("");
+  // Track deletions locally so a removed card disappears instantly, before the
+  // server refresh lands.
+  const [removed, setRemoved] = useState<Set<string>>(new Set());
+
+  const topics = useMemo(
+    () => initialTopics.filter((t) => !removed.has(t.slug)),
+    [initialTopics, removed],
+  );
+
+  const handleDeleted = (slug: string) =>
+    setRemoved((prev) => new Set(prev).add(slug));
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return initialTopics;
-    return initialTopics.filter(
+    if (!q) return topics;
+    return topics.filter(
       (t) =>
         t.title.toLowerCase().includes(q) ||
         t.fileName.toLowerCase().includes(q) ||
         t.difficulty.toLowerCase().includes(q),
     );
-  }, [initialTopics, query]);
+  }, [topics, query]);
 
-  const totalLines = initialTopics.reduce((sum, t) => sum + t.lines, 0);
+  const totalLines = topics.reduce((sum, t) => sum + t.lines, 0);
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
@@ -35,7 +46,7 @@ export function DashboardClient({ initialTopics }: { initialTopics: Topic[] }) {
               Practice Vault
             </h1>
             <p className="mt-2 max-w-xl text-sm text-vault-muted">
-              {initialTopics.length} topics · {totalLines} lines of code you&apos;ve
+              {topics.length} topics · {totalLines} lines of code you&apos;ve
               written. Pick one to review, edit, and run it back.
             </p>
           </div>
@@ -93,11 +104,16 @@ export function DashboardClient({ initialTopics }: { initialTopics: Topic[] }) {
       ) : (
         <motion.div
           layout
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
         >
           <AnimatePresence mode="popLayout">
             {filtered.map((topic, i) => (
-              <TopicCard key={topic.slug} topic={topic} index={i} />
+              <TopicCard
+                key={topic.slug}
+                topic={topic}
+                index={i}
+                onDeleted={handleDeleted}
+              />
             ))}
           </AnimatePresence>
         </motion.div>
