@@ -92,7 +92,7 @@ console.log(`Factorial of ${num} is ${factorial}.`);
 
 
 // 15 
-let sum=0;
+sum=0;
 
 for(let i=1;i<=5;i++){
 
@@ -102,13 +102,13 @@ for(let i=1;i<=5;i++){
 
 console.log(sum);
 
-answer = 15
+// answer = 15
 
-1
-3
-6
-10
-15
+// 1
+// 3
+// 6
+// 10
+// 15
 
 // (har iteration pe sum ka value print karna h toh console.log(sum) ko for loop ke andar likhna h)
 

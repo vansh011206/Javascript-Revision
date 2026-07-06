@@ -2,8 +2,8 @@
 let fruits = ["Apple","Banana","Mango","Orange"];
 
 // 2
-console.log(fruits[0]); -- Apple
-console.log(fruits[2]); -- Mango
+console.log(fruits[0]); // -- Apple
+console.log(fruits[2]); // -- Mango
 
 // 3
 4
@@ -72,5 +72,5 @@ arr.pop();
 
 console.log(arr);
 
--- [1,2,3]
+// -- [1,2,3]
 

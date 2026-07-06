@@ -4,7 +4,7 @@ const hello = () =>{
 }
 
 // 2
-Hi
+// Hi
 
 // 3
 // const sqaure = (num) => {
@@ -49,9 +49,9 @@ sum(10, 20, 30);
 // undefined - (kyunki vo return kar raha h print ni ) ya sirf 40 
 
 // 13
-function largest(a, b) {
-    return a > b ? a : b;
-}
+// function largest(a, b) {
+//     return a > b ? a : b;
+// }
 
 const largest = (a, b) => {
     if(a>b){
@@ -64,7 +64,7 @@ const largest = (a, b) => {
 
 // 14
 const positive = (num) => {
-    return a>0 ? "Positive" : "Negative";
+    return num>0 ? "Positive" : "Negative";
 }
 
 positive(10);

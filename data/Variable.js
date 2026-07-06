@@ -34,9 +34,9 @@ const PI = 3.14159;
 // second one throw eror because vo value change kar rha h const m value change ni hoti h
 
 // 14
-const name = {userName: "Vanshaj" };
+const user = {userName: "Vanshaj" };
 
-name.userName = "Rahul";
+user.userName = "Rahul";
 
 // 15
 // What is the difference between let, const, and var?

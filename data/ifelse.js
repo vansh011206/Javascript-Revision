@@ -50,12 +50,12 @@ else{
 // 9
 // Access Denied
 // 10
-let age = 22;
+age = 22;
 
 console.log((age>=18)&& (age<=60) ? "Adult" : "Out of range");
 
 // 11
-B 
+// B 
 
 // 12
 let day = 3;
@@ -87,7 +87,7 @@ switch(day){
 }
 
 // 13
-A
+// A
 
 // B - islie nhi kyunki  data type number h aur a ka data type string h.
 

@@ -11,20 +11,20 @@ console.log(name);
 console.log(age);
 
 // 2
-Rahul
+// Rahul
 
 // 3
-X5
+// X5
 
 // 4
 const person = {
     name: "Aman"
 };
-const {age = 18} = person;
-console.log(age)
+const {age: personAge = 18} = person;
+console.log(personAge)
 
 // 5
-Delhi
+// Delhi
 
 // 6
 const { name: studentName } = student 
@@ -35,7 +35,7 @@ console.log(studentName)
 // 20
 
 // 8
-Delhi
+// Delhi
 
 // 9
 
@@ -51,7 +51,7 @@ console.log(price)
 30
 
 // 11
-const student = {
+const studentDetail = {
     name: "Vanshaj",
     address: {
         city: "Delhi",
@@ -59,15 +59,15 @@ const student = {
     }
 };
 
-const{address:{city}} = student;
+const{address:{city}} = studentDetail;
 console.log(city)
 
 // 12
 20
 
 // 13
-Rahul
-Noida
+// Rahul
+// Noida
 
 // 14
 // const { name } = student; - isme simply name ek variable ban jaaega 
