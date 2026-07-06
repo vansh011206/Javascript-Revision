@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Topic } from "@/lib/topics";
@@ -11,11 +11,30 @@ export function DashboardClient({ initialTopics }: { initialTopics: Topic[] }) {
   // Track deletions locally so a removed card disappears instantly, before the
   // server refresh lands.
   const [removed, setRemoved] = useState<Set<string>>(new Set());
+  const [localTopics, setLocalTopics] = useState<Topic[]>([]);
 
-  const topics = useMemo(
-    () => initialTopics.filter((t) => !removed.has(t.slug)),
-    [initialTopics, removed],
-  );
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("vault_snippets");
+      if (stored) {
+        const parsed = JSON.parse(stored) as { topic: Topic; content: string }[];
+        setLocalTopics(parsed.map((p) => p.topic));
+      }
+    } catch (e) {
+      console.error("Failed to load local storage topics:", e);
+    }
+  }, []);
+
+  const topics = useMemo(() => {
+    const apiTopics = initialTopics.filter((t) => !removed.has(t.slug));
+    const merged = [...apiTopics];
+    localTopics.forEach((lt) => {
+      if (!merged.some((t) => t.slug === lt.slug) && !removed.has(lt.slug)) {
+        merged.push(lt);
+      }
+    });
+    return merged.sort((a, b) => b.modified.localeCompare(a.modified));
+  }, [initialTopics, localTopics, removed]);
 
   const handleDeleted = (slug: string) =>
     setRemoved((prev) => new Set(prev).add(slug));

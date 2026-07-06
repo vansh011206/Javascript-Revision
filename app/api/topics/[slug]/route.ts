@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import { readTopic, safeFilePath } from "@/lib/topics";
+import { readTopic, writeTopic, removeTopic } from "@/lib/topics";
 
 export const dynamic = "force-dynamic";
 
@@ -39,22 +38,14 @@ export async function PUT(
       return NextResponse.json({ error: "content must be a string" }, { status: 400 });
     }
 
-    let full: string;
-    try {
-      full = safeFilePath(decodeURIComponent(slug));
-    } catch {
-      return NextResponse.json({ error: "Invalid topic name" }, { status: 400 });
-    }
-
-    try {
-      await fs.access(full); // must already exist to be edited
-    } catch {
+    const decodedSlug = decodeURIComponent(slug);
+    const existing = await readTopic(decodedSlug);
+    if (!existing) {
       return NextResponse.json({ error: "Topic not found" }, { status: 404 });
     }
 
-    await fs.writeFile(full, body.content, "utf8");
-    const stat = await fs.stat(full);
-    return NextResponse.json({ ok: true, modified: stat.mtime.toISOString() });
+    const { topic } = await writeTopic(decodedSlug, body.content);
+    return NextResponse.json({ ok: true, modified: topic.modified });
   } catch (error: any) {
     console.error("Error in PUT /api/topics/[slug]:", error);
     return NextResponse.json(
@@ -72,22 +63,14 @@ export async function DELETE(
   try {
     const { slug } = await params;
 
-    let full: string;
-    try {
-      full = safeFilePath(decodeURIComponent(slug));
-    } catch {
-      return NextResponse.json({ error: "Invalid topic name" }, { status: 400 });
-    }
-
-    try {
-      await fs.access(full); // check if exists before deleting
-    } catch {
+    const decodedSlug = decodeURIComponent(slug);
+    const existing = await readTopic(decodedSlug);
+    if (!existing) {
       return NextResponse.json({ error: "Topic not found" }, { status: 404 });
     }
 
-    try {
-      await fs.unlink(full);
-    } catch {
+    const deleted = await removeTopic(decodedSlug);
+    if (!deleted) {
       return NextResponse.json({ error: "Failed to delete topic" }, { status: 500 });
     }
     return NextResponse.json({ ok: true });

@@ -14,9 +14,11 @@ type Status = "saved" | "dirty" | "saving" | "error";
 export function TopicEditorClient({
   topic,
   initialContent,
+  isLocalFallback = false,
 }: {
   topic: Topic;
   initialContent: string;
+  isLocalFallback?: boolean;
 }) {
   const router = useRouter();
   const accent = accentClasses[accentFor(topic.slug)];
@@ -30,9 +32,65 @@ export function TopicEditorClient({
 
   const dirty = code !== savedCode;
 
+  // Load content from localStorage if we are in local fallback mode
+  useEffect(() => {
+    if (isLocalFallback) {
+      try {
+        const stored = localStorage.getItem("vault_snippets");
+        if (stored) {
+          const list = JSON.parse(stored) as { topic: Topic; content: string }[];
+          const found = list.find((item) => item.topic.slug === topic.slug);
+          if (found) {
+            setCode(found.content);
+            setSavedCode(found.content);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load local storage snippet:", e);
+      }
+    }
+  }, [isLocalFallback, topic.slug]);
+
+  const saveToLocalStorage = useCallback(() => {
+    try {
+      const stored = localStorage.getItem("vault_snippets");
+      let list = stored ? JSON.parse(stored) : [];
+      const index = list.findIndex((item: any) => item.topic.slug === topic.slug);
+
+      const lines = code.split("\n").length;
+      const updatedTopic = {
+        ...topic,
+        lines,
+        size: code.length,
+        modified: new Date().toISOString(),
+      };
+
+      if (index !== -1) {
+        list[index] = { topic: updatedTopic, content: code };
+      } else {
+        list.push({ topic: updatedTopic, content: code });
+      }
+
+      localStorage.setItem("vault_snippets", JSON.stringify(list));
+      setSavedCode(code);
+      setStatus("saved");
+      alert("Note: Saved to browser storage (localStorage) because the cloud server filesystem is read-only.");
+      router.refresh();
+    } catch (e: any) {
+      setStatus("error");
+      setMessage(e.message ?? "Failed to save to browser storage");
+    }
+  }, [code, topic, router]);
+
   const save = useCallback(async () => {
     setStatus("saving");
     setMessage(null);
+
+    if (isLocalFallback) {
+      saveToLocalStorage();
+      return;
+    }
+
     try {
       const res = await fetch(
         `/api/topics/${encodeURIComponent(topic.slug)}`,
@@ -49,11 +107,19 @@ export function TopicEditorClient({
       setSavedCode(code);
       setStatus("saved");
       router.refresh(); // update card metadata (lines, modified) on the dashboard
-    } catch (err) {
+    } catch (err: any) {
+      const msg = err instanceof Error ? err.message : "Failed to save";
+      const isReadOnly = msg.includes("EROFS") || msg.includes("read-only");
+      
+      if (isReadOnly) {
+        saveToLocalStorage();
+        return;
+      }
+      
       setStatus("error");
-      setMessage(err instanceof Error ? err.message : "Failed to save");
+      setMessage(msg);
     }
-  }, [code, topic.slug, router]);
+  }, [code, topic.slug, router, isLocalFallback, saveToLocalStorage]);
 
   // Keep status in sync as the user types.
   useEffect(() => {
@@ -73,18 +139,43 @@ export function TopicEditorClient({
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
 
+  const deleteFromLocalStorage = useCallback(() => {
+    try {
+      const stored = localStorage.getItem("vault_snippets");
+      if (stored) {
+        let list = JSON.parse(stored);
+        list = list.filter((item: any) => item.topic.slug !== topic.slug);
+        localStorage.setItem("vault_snippets", JSON.stringify(list));
+      }
+      router.push("/");
+      router.refresh();
+    } catch (e) {
+      setStatus("error");
+      setMessage("Failed to delete from browser storage");
+    }
+  }, [topic.slug, router]);
+
   const handleDelete = async () => {
     if (!confirm(`Delete "${topic.title}" from your vault? This cannot be undone.`))
       return;
-    const res = await fetch(`/api/topics/${encodeURIComponent(topic.slug)}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      router.push("/");
-      router.refresh();
-    } else {
-      setStatus("error");
-      setMessage("Failed to delete file");
+
+    if (isLocalFallback) {
+      deleteFromLocalStorage();
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/topics/${encodeURIComponent(topic.slug)}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        router.push("/");
+        router.refresh();
+      } else {
+        throw new Error("Failed to delete");
+      }
+    } catch {
+      deleteFromLocalStorage();
     }
   };
 

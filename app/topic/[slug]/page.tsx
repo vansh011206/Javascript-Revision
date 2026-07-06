@@ -10,10 +10,25 @@ export default async function TopicPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const result = await readTopic(decodeURIComponent(slug));
-  if (!result) notFound();
+  const decodedSlug = decodeURIComponent(slug);
+  const result = await readTopic(decodedSlug);
+
+  const initialTopic = result?.topic ?? {
+    slug: decodedSlug,
+    fileName: `${decodedSlug}.js`,
+    title: decodedSlug.replace(/[_-]+/g, " "),
+    lines: 0,
+    size: 0,
+    modified: new Date().toISOString(),
+    difficulty: "Beginner"
+  };
+  const initialContent = result?.content ?? "";
 
   return (
-    <TopicEditorClient topic={result.topic} initialContent={result.content} />
+    <TopicEditorClient 
+      topic={initialTopic} 
+      initialContent={initialContent} 
+      isLocalFallback={!result}
+    />
   );
 }

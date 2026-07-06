@@ -76,9 +76,56 @@ export function NotebookClient() {
       const data = await res.json().catch(() => ({}));
       router.push("/");
       router.refresh();
-    } catch (err) {
-      setSaving(false);
+    } catch (err: any) {
       const msg = err instanceof Error ? err.message : "Failed to save";
+      const isReadOnly = msg.includes("EROFS") || msg.includes("read-only");
+      
+      if (isReadOnly) {
+        try {
+          const stored = localStorage.getItem("vault_snippets");
+          const list = stored ? JSON.parse(stored) : [];
+          const slug = previewFile(name);
+          const fileName = `${slug}.js`;
+
+          if (list.some((item: any) => item.topic.slug === slug)) {
+            throw new Error("A topic with that name already exists in browser storage");
+          }
+
+          const lines = code.split("\n").length;
+          
+          // Compute difficulty based on name matching
+          const nameLower = name.toLowerCase().replace(/[_-]/g, "");
+          const advancedKeywords = ["advanced", "destruct", "spread", "rest", "promise", "async", "await", "callback", "closure", "hoisting", "prototype", "class", "inheritance", "bind", "call", "apply", "generator", "iterator", "module", "lexical", "scope"];
+          const intermediateKeywords = ["function", "arrow", "array", "object", "foreach", "map", "filter", "reduce", "template", "templet", "try", "catch", "exception", "error", "math", "date", "regex"];
+          let diff: "Beginner" | "Intermediate" | "Advanced" = "Beginner";
+          if (advancedKeywords.some(k => nameLower.includes(k))) diff = "Advanced";
+          else if (intermediateKeywords.some(k => nameLower.includes(k))) diff = "Intermediate";
+
+          const newTopic = {
+            slug,
+            fileName,
+            title: name,
+            lines,
+            size: code.length,
+            modified: new Date().toISOString(),
+            difficulty: diff
+          };
+
+          list.push({ topic: newTopic, content: code });
+          localStorage.setItem("vault_snippets", JSON.stringify(list));
+
+          alert("Note: Saved to browser storage (localStorage) because the cloud server filesystem is read-only. Run the app locally on localhost:3000 to save to your local folder!");
+          router.push("/");
+          router.refresh();
+          return;
+        } catch (localErr: any) {
+          setError(localErr.message ?? "Failed to save to browser storage");
+          setSaving(false);
+          return;
+        }
+      }
+
+      setSaving(false);
       setError(msg);
       // A name clash means they need to pick a different one — reopen naming.
       if (/exists/i.test(msg)) {

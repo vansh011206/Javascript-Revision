@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import { listTopics, safeFilePath, toTitle } from "@/lib/topics";
+import { listTopics, readTopic, writeTopic, toTitle } from "@/lib/topics";
 
-// Always read fresh from disk — never cache the file listing.
+// Always read fresh from disk/DB — never cache the file listing.
 export const dynamic = "force-dynamic";
 
 /** GET /api/topics → list every practice file with metadata. */
@@ -39,30 +38,22 @@ export async function POST(request: Request) {
       );
     }
     const fileName = `${cleaned.replace(/\s+/g, "_")}.js`;
-
-    let full: string;
-    try {
-      full = safeFilePath(fileName);
-    } catch {
-      return NextResponse.json({ error: "Invalid topic name" }, { status: 400 });
-    }
+    const slug = fileName.replace(/\.js$/i, "");
 
     // Don't clobber an existing file.
-    try {
-      await fs.access(full);
+    const existing = await readTopic(slug);
+    if (existing) {
       return NextResponse.json(
         { error: "A topic with that name already exists" },
         { status: 409 },
       );
-    } catch {
-      // ENOENT = good, the file is free to create.
     }
 
     const content =
       body.content ?? `// ${toTitle(fileName)}\n// Written in the JS Practice Vault notebook.\n\n`;
-    await fs.writeFile(full, content, "utf8");
+    
+    await writeTopic(slug, content);
 
-    const slug = fileName.replace(/\.js$/i, "");
     return NextResponse.json({ slug, fileName }, { status: 201 });
   } catch (error: any) {
     console.error("Error in POST /api/topics:", error);
