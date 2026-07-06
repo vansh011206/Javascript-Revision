@@ -31,6 +31,21 @@ export function TopicCard({
     open();
   };
 
+  const deleteFromLocalStorage = () => {
+    try {
+      const stored = localStorage.getItem("vault_snippets");
+      if (stored) {
+        let list = JSON.parse(stored);
+        list = list.filter((item: any) => item.topic.slug !== topic.slug);
+        localStorage.setItem("vault_snippets", JSON.stringify(list));
+      }
+      onDeleted(topic.slug);
+      router.refresh();
+    } catch (e) {
+      alert("Failed to delete from browser storage");
+    }
+  };
+
   const remove = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (
@@ -47,8 +62,8 @@ export function TopicCard({
       onDeleted(topic.slug);
       router.refresh();
     } catch {
-      setDeleting(false);
-      alert("Failed to delete file.");
+      // Fallback: Delete from browser local storage if the server API fails (e.g. read-only file system)
+      deleteFromLocalStorage();
     }
   };
 
