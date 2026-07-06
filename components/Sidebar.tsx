@@ -48,7 +48,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`group flex items-center gap-2 md:gap-3 rounded-xl px-2.5 py-1.5 md:px-3 md:py-2.5 text-xs md:text-sm font-medium transition-colors ${
                 active
                   ? "bg-white/[0.06] text-vault-text"
                   : "text-vault-muted hover:bg-white/[0.03] hover:text-vault-text"
@@ -61,7 +61,7 @@ export function Sidebar() {
                 strokeWidth={1.7}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={`h-[18px] w-[18px] transition-colors ${
+                className={`h-4 w-4 md:h-[18px] md:w-[18px] transition-colors ${
                   active ? "text-accent-orange" : "text-vault-faint group-hover:text-vault-muted"
                 }`}
               >

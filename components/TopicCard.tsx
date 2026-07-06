@@ -101,7 +101,7 @@ export function TopicCard({
           </div>
 
           {/* Edit + Delete — visible on hover, always visible on touch */}
-          <div className="flex items-center gap-1 opacity-60 transition-opacity duration-200 group-hover:opacity-100">
+          <div className="flex items-center gap-1 sm:opacity-60 transition-opacity duration-200 group-hover:opacity-100 opacity-100">
             <button
               onClick={edit}
               aria-label="Edit snippet"

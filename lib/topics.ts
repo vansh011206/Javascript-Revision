@@ -35,11 +35,33 @@ export function toTitle(fileName: string): string {
     .trim();
 }
 
-/** Difficulty is a rough heuristic based on how much code the file holds. */
-function difficultyFor(lines: number): Topic["difficulty"] {
-  if (lines < 20) return "Beginner";
-  if (lines < 45) return "Intermediate";
-  return "Advanced";
+/** Difficulty is determined by keywords in the topic slug (name). */
+function difficultyFor(slug: string): Topic["difficulty"] {
+  const name = slug.toLowerCase().replace(/[_-]/g, "");
+
+  // Advanced topics
+  const advancedKeywords = [
+    "advanced", "destruct", "spread", "rest", "promise", "async", "await", 
+    "callback", "closure", "hoisting", "prototype", "class", "inheritance", 
+    "bind", "call", "apply", "generator", "iterator", "module", "lexical", "scope"
+  ];
+
+  // Intermediate topics
+  const intermediateKeywords = [
+    "function", "arrow", "array", "object", "foreach", "map", "filter", "reduce", 
+    "template", "templet", "try", "catch", "exception", "error", "math", "date", "regex"
+  ];
+
+  if (advancedKeywords.some((keyword) => name.includes(keyword))) {
+    return "Advanced";
+  }
+
+  if (intermediateKeywords.some((keyword) => name.includes(keyword))) {
+    return "Intermediate";
+  }
+
+  // Default to Beginner (for variables, datatypes, operators, loops, ifelse, etc.)
+  return "Beginner";
 }
 
 /**
@@ -68,14 +90,15 @@ export async function listTopics(): Promise<Topic[]> {
         fs.stat(full),
       ]);
       const lines = content.split("\n").length;
+      const slug = fileName.replace(/\.js$/i, "");
       return {
-        slug: fileName.replace(/\.js$/i, ""),
+        slug,
         fileName,
         title: toTitle(fileName),
         lines,
         size: stat.size,
         modified: stat.mtime.toISOString(),
-        difficulty: difficultyFor(lines),
+        difficulty: difficultyFor(slug),
       } satisfies Topic;
     }),
   );
@@ -95,16 +118,17 @@ export async function readTopic(
     ]);
     const fileName = path.basename(full);
     const lines = content.split("\n").length;
+    const topicSlug = fileName.replace(/\.js$/i, "");
     return {
       content,
       topic: {
-        slug: fileName.replace(/\.js$/i, ""),
+        slug: topicSlug,
         fileName,
         title: toTitle(fileName),
         lines,
         size: stat.size,
         modified: stat.mtime.toISOString(),
-        difficulty: difficultyFor(lines),
+        difficulty: difficultyFor(topicSlug),
       },
     };
   } catch {

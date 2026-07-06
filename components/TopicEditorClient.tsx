@@ -102,9 +102,9 @@ export function TopicEditorClient({
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {/* Toolbar */}
-      <header className="glass z-10 border-b border-vault-border px-5 py-3.5 sm:px-8">
+      <header className="glass z-10 border-b border-vault-border px-3 py-2 sm:px-8 sm:py-3.5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
             <Link
@@ -170,7 +170,7 @@ export function TopicEditorClient({
             <button
               onClick={save}
               disabled={!dirty || status === "saving"}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+              className={`inline-flex items-center gap-2 rounded-xl px-2.5 py-1.5 sm:px-4 sm:py-2 text-sm font-semibold transition-all ${
                 dirty && status !== "saving"
                   ? "bg-gradient-to-r from-accent-orange to-accent-purple text-black hover:scale-[1.03] active:scale-95"
                   : "cursor-not-allowed bg-white/5 text-vault-faint"

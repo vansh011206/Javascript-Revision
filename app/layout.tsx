@@ -29,10 +29,10 @@ export default function RootLayout({
       lang="en"
       className={`${sans.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">
-        <div className="flex min-h-screen flex-col md:flex-row">
+      <body className="h-full">
+        <div className="flex h-screen overflow-hidden flex-col md:flex-row">
           <Sidebar />
-          <main className="min-w-0 flex-1">{children}</main>
+          <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
         </div>
       </body>
     </html>

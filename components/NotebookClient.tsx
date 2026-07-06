@@ -89,9 +89,9 @@ export function NotebookClient() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {/* Toolbar */}
-      <header className="glass z-10 border-b border-vault-border px-5 py-3.5 sm:px-8">
+      <header className="glass z-10 border-b border-vault-border px-4 py-2.5 sm:px-8 sm:py-3.5">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export function NotebookClient() {
             <button
               onClick={save}
               disabled={!nameSet || saving}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+              className={`inline-flex items-center gap-2 rounded-xl px-2.5 py-1.5 sm:px-4 sm:py-2 text-sm font-semibold transition-all ${
                 nameSet && !saving
                   ? "bg-gradient-to-r from-accent-teal to-accent-purple text-black hover:scale-[1.03] active:scale-95"
                   : "cursor-not-allowed bg-white/5 text-vault-faint"
@@ -155,7 +155,8 @@ export function NotebookClient() {
                 <path d="M5 3h11l3 3v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
                 <path d="M17 21v-8H7v8M7 3v5h8" />
               </svg>
-              {saving ? "Saving…" : "Save to Vault"}
+              <span className="hidden sm:inline">{saving ? "Saving…" : "Save to Vault"}</span>
+              <span className="inline sm:hidden">{saving ? "…" : "Save"}</span>
             </button>
           </div>
         </div>
