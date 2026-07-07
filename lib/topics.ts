@@ -187,6 +187,20 @@ export async function readTopic(
   if (collection) {
     const doc = await collection.findOne({ slug });
     if (!doc) return null;
+
+    // Ensure it is also saved to local disk if missing
+    try {
+      const full = safeFilePath(slug);
+      try {
+        await fs.access(full);
+      } catch {
+        await fs.mkdir(DATA_DIR, { recursive: true });
+        await fs.writeFile(full, doc.content, "utf8");
+      }
+    } catch (err) {
+      console.error(`Failed to sync missing topic ${slug} to disk:`, err);
+    }
+
     return {
       content: doc.content,
       topic: {
@@ -262,6 +276,16 @@ export async function writeTopic(
       content,
     };
     await collection.replaceOne({ slug }, doc, { upsert: true });
+
+    // Write to disk as well
+    try {
+      const full = safeFilePath(slug);
+      await fs.mkdir(DATA_DIR, { recursive: true });
+      await fs.writeFile(full, content, "utf8");
+    } catch (err) {
+      console.error(`Failed to write local backup file for ${slug}:`, err);
+    }
+
     return { topic, content };
   }
 
@@ -275,6 +299,12 @@ export async function removeTopic(slug: string): Promise<boolean> {
   const collection = await getCollection();
   if (collection) {
     const result = await collection.deleteOne({ slug });
+    try {
+      const full = safeFilePath(slug);
+      await fs.unlink(full);
+    } catch {
+      // Ignore if file doesn't exist
+    }
     return result.deletedCount > 0;
   }
 
